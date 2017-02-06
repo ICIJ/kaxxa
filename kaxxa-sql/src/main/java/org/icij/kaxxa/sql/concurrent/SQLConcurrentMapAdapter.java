@@ -1,4 +1,4 @@
-package org.icij.sql.concurrent;
+package org.icij.kaxxa.sql.concurrent;
 
 import java.sql.Connection;
 import java.sql.SQLException;

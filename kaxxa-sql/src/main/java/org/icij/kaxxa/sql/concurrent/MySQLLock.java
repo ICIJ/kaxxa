@@ -1,4 +1,4 @@
-package org.icij.sql.concurrent;
+package org.icij.kaxxa.sql.concurrent;
 
 import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
