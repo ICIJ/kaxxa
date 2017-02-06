@@ -62,6 +62,9 @@
 
 	<modules>
 		<module>kaxxa-concurrent</module>
+		<module>kaxxa-events</module>
+		<module>kaxxa-io</module>
+		<module>kaxxa-sql</module>
 	</modules>
 
 	<profiles>
