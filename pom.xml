@@ -22,6 +22,13 @@
 		<url>https://github.com/ICIJ/kaxxa/issues</url>
 	</issueManagement>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<licenses>
 		<license>
 			<name>MIT License</name>
@@ -42,6 +49,8 @@
 			<name>Matthew Caruana Galizia</name>
 			<url>https://github.com/mattcg</url>
 			<id>mcaruanagalizia</id>
+			<organization>The International Consortium of Investigative Journalists</organization>
+			<organizationUrl>https://www.icij.org/</organizationUrl>
 		</developer>
 	</developers>
 
@@ -64,6 +73,33 @@
 			<build>
 				<plugins>
 					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.7</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<stagingProfileId>46a8e1849c1646</stagingProfileId>
+							<autoReleaseAfterClose>false</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+
+					<plugin>
 						<artifactId>maven-assembly-plugin</artifactId>
 						<executions>
 							<execution>
@@ -82,6 +118,36 @@
 								<id>source-release-assembly</id>
 							</execution>
 						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>2.2.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<additionalparam>-Xdoclint:none</additionalparam>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>
