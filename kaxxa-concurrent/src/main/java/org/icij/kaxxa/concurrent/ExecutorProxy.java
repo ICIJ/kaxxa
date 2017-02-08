@@ -19,7 +19,7 @@ public abstract class ExecutorProxy implements Shutdownable {
 	/**
 	 * Use a per instance logger, so that the name is the name of the implementing class.
 	 */
-	private final Logger logger = Logger.getLogger(getClass().getName());
+	private final Logger logger;
 
 	/**
 	 * The executor proxied by the implementing class.
@@ -33,6 +33,7 @@ public abstract class ExecutorProxy implements Shutdownable {
 	 */
 	public ExecutorProxy(final ExecutorService executor) {
 		this.executor = executor;
+		logger = Logger.getLogger(getClass().getName());
 	}
 
 	/**
@@ -44,7 +45,7 @@ public abstract class ExecutorProxy implements Shutdownable {
 	 */
 	@Override
 	public void shutdown() {
-		logger.info(String.format("Shutting down %s.", getClass().getName()));
+		logger.info("Shutting down.");
 		executor.shutdown();
 	}
 
@@ -55,7 +56,7 @@ public abstract class ExecutorProxy implements Shutdownable {
 	 * be queued, otherwise an empty list if using a blocking executor.
 	 */
 	public List<Runnable> shutdownNow() {
-		logger.info(String.format("Shutting down %s immediately.", getClass().getName()));
+		logger.info("Shutting down immediately.");
 		return executor.shutdownNow();
 	}
 
