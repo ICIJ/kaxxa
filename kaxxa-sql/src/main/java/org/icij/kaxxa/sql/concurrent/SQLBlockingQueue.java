@@ -3,6 +3,7 @@ package org.icij.kaxxa.sql.concurrent;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 
 public class SQLBlockingQueue<E> extends AbstractBlockingQueue<E> {
@@ -16,78 +17,49 @@ public class SQLBlockingQueue<E> extends AbstractBlockingQueue<E> {
 		this.adapter = adapter;
 	}
 
-	@Override
-	public int size() {
+	private <R> R withConnection(final CheckedFunction<Connection, R> function) {
 		try (final Connection c = ds.getConnection()) {
-			return adapter.size(c);
+			return function.apply(c);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public int size() {
+		return withConnection(adapter::size);
 	}
 
 	@Override
 	public E peek() {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.peek(c);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(adapter::peek);
 	}
 
 	@Override
 	public boolean contains(final Object o) {
-		if (null == o) {
-			throw new NullPointerException();
-		}
-
-		try (final Connection c = ds.getConnection()) {
-			return adapter.contains(c, o);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		Objects.requireNonNull(o);
+		return withConnection(c -> adapter.contains(c, o));
 	}
 
 	@Override
 	public boolean remove(final Object o) {
-		if (null == o) {
-			throw new NullPointerException();
-		}
-
-		try (final Connection c = ds.getConnection()) {
-			return adapter.remove(c, o) > 0;
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		Objects.requireNonNull(o);
+		return withConnection(c -> adapter.remove(c, o) > 0);
 	}
 
 	@Override
 	public void clear() {
-		try (final Connection c = ds.getConnection()) {
-			adapter.clear(c);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		withConnection(adapter::clear);
 	}
 
 	@Override
 	public E poll() {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.poll(c);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(adapter::poll);
 	}
 
 	@Override
 	public boolean add(final E element) {
-		if (null == element) {
-			throw new NullPointerException();
-		}
-
-		try (final Connection c = ds.getConnection()) {
-			return adapter.add(c, element) > 0;
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		Objects.requireNonNull(element);
+		return withConnection(c -> adapter.add(c, element)) > 0;
 	}
 }

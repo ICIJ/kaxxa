@@ -6,6 +6,12 @@ import java.util.Map;
 
 public interface SQLCodec<T> {
 
+	/**
+	 * Encode the "key", which is map of column names to values used to uniquely look up an object.
+	 *
+	 * @param o the object to encode
+	 * @return a column name and key value map
+	 */
 	Map<String, Object> encodeKey(final Object o);
 
 	/**
@@ -16,10 +22,10 @@ public interface SQLCodec<T> {
 	T decodeValue(final ResultSet rs) throws SQLException;
 
 	/**
-	 * Encode an instance into a map of keys and values.
+	 * Encode an instance into a map of column names and values.
 	 *
 	 * @param o the instance to encode
-	 * @return a key-value map
+	 * @return a column name and value map
 	 */
 	Map<String, Object> encodeValue(final Object o);
 }

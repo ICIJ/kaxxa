@@ -17,6 +17,14 @@ public class SQLConcurrentMap<K, V> extends AbstractConcurrentMap<K, V> {
 		this.adapter = adapter;
 	}
 
+	private <R> R withConnection(final CheckedFunction<Connection, R> function) {
+		try (final Connection c = ds.getConnection()) {
+			return function.apply(c);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	@Override
 	public Set<K> keySet() {
 		throw new UnsupportedOperationException();
@@ -34,126 +42,70 @@ public class SQLConcurrentMap<K, V> extends AbstractConcurrentMap<K, V> {
 
 	@Override
 	public int size() {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.size(c);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(adapter::size);
 	}
 
 	@Override
 	public boolean isEmpty() {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.isEmpty(c);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(adapter::isEmpty);
 	}
 
 	@Override
 	public boolean containsKey(final Object key) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.containsKey(c, key);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.containsKey(c, key));
 	}
 
 	@Override
 	public V get(final Object key) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.get(c, key);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.get(c, key));
 	}
 
 	@Override
 	public void putAll(Map<? extends K, ? extends V> m) {
-		try (final Connection c = ds.getConnection()) {
-			adapter.putAll(c, m);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		withConnection(c -> adapter.putAll(c, m));
 	}
 
 	@Override
 	public boolean containsValue(final Object o) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.containsValue(c, o);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.containsValue(c, o));
 	}
 
 	@Override
 	public V put(final K key, final V value) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.put(c, key, value);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.put(c, key, value));
 	}
 
 	@Override
 	public V putIfAbsent(final K key, final V value) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.putIfAbsent(c, key, value);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.putIfAbsent(c, key, value));
 	}
 
 	public boolean fastPut(final K key, final V value) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.fastPut(c, key, value);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.fastPut(c, key, value));
 	}
 
 	@Override
 	public boolean remove(final Object key, final Object value) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.remove(c, key, value) > 0;
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.remove(c, key, value) > 0);
 	}
 
 	@Override
 	public V remove(final Object key) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.remove(c, key);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.remove(c, key));
 	}
 
 	@Override
 	public V replace(final K key, final V value) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.replace(c, key, value);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.replace(c, key, value));
 	}
 
 	@Override
 	public boolean replace(final K key, final V oldValue, final V newValue) {
-		try (final Connection c = ds.getConnection()) {
-			return adapter.replace(c, key, oldValue, newValue) > 0;
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		return withConnection(c -> adapter.replace(c, key, oldValue, newValue) > 0);
 	}
 
 	@Override
 	public void clear() {
-		try (final Connection c = ds.getConnection()) {
-			adapter.clear(c);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		withConnection(adapter::clear);
 	}
 }

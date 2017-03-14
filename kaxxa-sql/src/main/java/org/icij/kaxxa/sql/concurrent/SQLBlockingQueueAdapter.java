@@ -6,7 +6,7 @@ import java.sql.SQLException;
 public interface SQLBlockingQueueAdapter<T> {
 
 	/**
-	 * Runs a query that deletes the specified item from the underlying table and return the number of rows deleted.
+	 * Runs a query that deletes the specified item from the underlying table and returns the number of rows deleted.
 	 *
 	 * @param o the object to delete
 	 * @return the number of rows deleted

@@ -266,33 +266,16 @@ public class MySQLConcurrentMapAdapter<K, V> implements SQLConcurrentMapAdapter<
 	}
 
 	@Override
-	public void putAll(final Connection c, final Map<? extends K, ? extends V> m) throws SQLException {
+	public int putAll(final Connection c, final Map<? extends K, ? extends V> m) throws SQLException {
+		int total = 0;
+
 		for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
-			final Map<String, Object> values = codec.encodeValue(e.getValue());
-
-			// Merge in the keys.
-			values.putAll(codec.encodeKey(e.getKey()));
-
-			final Set<String> keySet = values.keySet();
-
-			final String placeholders = String.join(", ", keySet.stream().map(k -> k + " = ?")
-					.toArray(String[]::new));
-
-			try (final PreparedStatement q = c.prepareStatement("INSERT " + table + " SET " + placeholders +
-					" ON DUPLICATE KEY UPDATE " + placeholders + ";")) {
-
-				int i = 1;
-				final int l = values.size();
-
-				for (String k : keySet) {
-					q.setObject(i, values.get(k));
-					q.setObject(l + i, values.get(k));
-					i++;
-				}
-
-				q.executeUpdate();
+			if (fastPut(c, e.getKey(), e.getValue())) {
+				total++;
 			}
 		}
+
+		return total;
 	}
 
 	@Override
