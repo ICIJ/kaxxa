@@ -43,12 +43,12 @@ public class URLEncodingInputStream extends FilterInputStream {
 	}
 
 	@Override
-	public int read(byte[] buffer) throws IOException {
-		return read(buffer, 0, buffer.length);
+	public int read(byte[] buff) throws IOException {
+		return read(buff, 0, buff.length);
 	}
 
 	@Override
-	public synchronized int read(byte[] bbuf, int off, int len) throws IOException {
+	public synchronized int read(byte[] buff, int off, int len) throws IOException {
 		int read = 0;
 
 		while (read < len) {
@@ -57,7 +57,7 @@ public class URLEncodingInputStream extends FilterInputStream {
 			if (-1 == b) {
 				break;
 			} else {
-				bbuf[read++] = (byte) b;
+				buff[read++] = (byte) b;
 			}
 		}
 
