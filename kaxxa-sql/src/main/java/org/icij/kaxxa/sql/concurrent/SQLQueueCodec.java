@@ -1,6 +1,6 @@
 package org.icij.kaxxa.sql.concurrent;
 
-public interface SQLQueueCodec<T> extends SQLCodec<T> {
+public interface SQLQueueCodec<E> extends SQLCodec<E> {
 
 	/**
 	 * Get the name of the column used to store the status value.
