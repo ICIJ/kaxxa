@@ -102,6 +102,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 					if (rs.next()) {
 						o = codec.decodeValue(rs);
 					} else {
+						c.rollback();
 						return null;
 					}
 				}
