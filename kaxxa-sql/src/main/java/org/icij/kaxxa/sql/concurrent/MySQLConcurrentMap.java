@@ -308,7 +308,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 		return dataSource.withStatementUnchecked("SELECT COUNT(*) FROM " + table + ";", q -> {
 			try (final ResultSet rs = q.executeQuery()) {
 				rs.next();
-				return rs.getInt(0);
+				return rs.getInt(1);
 			}
 		});
 	}
@@ -336,7 +336,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 			try (final ResultSet rs = q.executeQuery()) {
 				rs.next();
-				return rs.getBoolean(0);
+				return rs.getBoolean(1);
 			}
 		});
 	}
@@ -355,7 +355,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 			try (final ResultSet rs = q.executeQuery()) {
 				rs.next();
-				return rs.getBoolean(0);
+				return rs.getBoolean(1);
 			}
 		});
 	}
@@ -366,7 +366,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 			final ResultSet rs = q.executeQuery();
 
 			rs.next();
-			return rs.getBoolean(0);
+			return rs.getBoolean(1);
 		});
 	}
 

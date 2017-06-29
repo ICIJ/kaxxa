@@ -69,7 +69,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 
 			try (final ResultSet rs = q.executeQuery()) {
 				rs.next();
-				return rs.getBoolean(0);
+				return rs.getBoolean(1);
 			}
 		});
 	}
@@ -82,7 +82,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 
 			try (final ResultSet rs = q.executeQuery()) {
 				rs.next();
-				return rs.getInt(0);
+				return rs.getInt(1);
 			}
 		});
 	}
