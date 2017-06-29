@@ -22,7 +22,7 @@ class MySQLCondition extends SQLCondition {
 
 	@Override
 	public void signal() {
-		dataSource.withConnection(c -> {
+		dataSource.withConnectionUnchecked(c -> {
 
 			// Find one blocked thread to wake up.
 			final List<Long> threads = findLockThreads(c, 1);
@@ -35,7 +35,7 @@ class MySQLCondition extends SQLCondition {
 
 	@Override
 	public void signalAll() {
-		dataSource.withConnection(c -> {
+		dataSource.withConnectionUnchecked(c -> {
 
 			// Find a list of blocked threads to wake up.
 			final List<Long> threads = findLockThreads(c, -1);
@@ -56,7 +56,7 @@ class MySQLCondition extends SQLCondition {
 
 		final long now = System.nanoTime();
 
-		return dataSource.withStatement("SELECT SLEEP(?), ?;", s -> {
+		return dataSource.withStatementUnchecked("SELECT SLEEP(?), ?;", s -> {
 
 			// Adjust timeout (due to time it took to get a connection).
 			final long adjustedTimeout = nanosTimeout - System.nanoTime() - now;

@@ -29,7 +29,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 		final Map<String, Object> keys = codec.encodeKey(o);
 		final Set<String> keySet = keys.keySet();
 
-		return dataSource.withStatement("DELETE FROM " + table + " WHERE " +
+		return dataSource.withStatementUnchecked("DELETE FROM " + table + " WHERE " +
 				String.join(" AND ", keySet.stream().map(k -> k + " = ?").toArray(String[]::new)) +
 				" AND " + codec.getStatusKey() + "=?;", q -> {
 			int i = 1;
@@ -44,7 +44,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 
 	@Override
 	public void clear() {
-		dataSource.withStatement("DELETE FROM " + table + " WHERE " + codec.getStatusKey() + " = ?;", q -> {
+		dataSource.withStatementUnchecked("DELETE FROM " + table + " WHERE " + codec.getStatusKey() + " = ?;", q -> {
 			q.setString(1, codec.getWaitingStatus());
 			return q.executeUpdate();
 		});
@@ -57,7 +57,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 		final Map<String, Object> keys = codec.encodeKey(o);
 		final Set<String> keySet = keys.keySet();
 
-		return dataSource.withStatement("SELECT EXISTS(SELECT * FROM " + table + " WHERE " +
+		return dataSource.withStatementUnchecked("SELECT EXISTS(SELECT * FROM " + table + " WHERE " +
 				String.join(" AND ", keySet.stream().map(k -> k + " = ?").toArray(String[]::new)) +
 				" AND " + codec.getStatusKey() + " = ?);", q -> {
 			int i = 1;
@@ -76,7 +76,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 
 	@Override
 	public int size() {
-		return dataSource.withStatement("SELECT COUNT(*) FROM " + table + " WHERE " +
+		return dataSource.withStatementUnchecked("SELECT COUNT(*) FROM " + table + " WHERE " +
 				codec.getStatusKey() + " = ?;", q -> {
 			q.setString(1, codec.getWaitingStatus());
 
@@ -151,7 +151,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 				String.join(", ", keys.stream().map(k -> "?").toArray(String[]::new)) + ") ON DUPLICATE KEY UPDATE "
 		+ codec.getStatusKey() + " = ?;";
 
-		return dataSource.withStatement(s, q -> {
+		return dataSource.withStatementUnchecked(s, q -> {
 			int i = 1;
 
 			for (String key: keys) {
@@ -165,7 +165,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 
 	@Override
 	public E peek() {
-		return dataSource.withStatement("SELECT * FROM " + table + " WHERE " + codec.getStatusKey() +
+		return dataSource.withStatementUnchecked("SELECT * FROM " + table + " WHERE " + codec.getStatusKey() +
 				" = ? LIMIT 1;", q -> {
 			q.setString(1, codec.getWaitingStatus());
 

@@ -33,7 +33,7 @@ public class MySQLLock extends SQLLock {
 
 	@Override
 	public boolean tryLock(final long time, final TimeUnit unit) {
-		return dataSource.withStatement("GET_LOCK(?, ?);", q -> {
+		return dataSource.withStatementUnchecked("GET_LOCK(?, ?);", q -> {
 			q.setString(1, name);
 			q.setLong(2, unit.toSeconds(time));
 			q.execute();
@@ -44,7 +44,7 @@ public class MySQLLock extends SQLLock {
 
 	@Override
 	public void unlock() {
-		dataSource.withStatement("RELEASE_LOCK(?);", q -> {
+		dataSource.withStatementUnchecked("RELEASE_LOCK(?);", q -> {
 			q.setString(1, name);
 			q.execute();
 

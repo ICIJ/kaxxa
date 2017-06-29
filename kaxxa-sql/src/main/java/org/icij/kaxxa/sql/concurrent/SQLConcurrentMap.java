@@ -10,7 +10,7 @@ public abstract class SQLConcurrentMap<K, V> implements ConcurrentMap<K, V> {
 
 	protected final FunctionalDataSource dataSource;
 
-	public SQLConcurrentMap(final DataSource dataSource) {
+	SQLConcurrentMap(final DataSource dataSource) {
 		this.dataSource = FunctionalDataSource.cast(dataSource);
 	}
 

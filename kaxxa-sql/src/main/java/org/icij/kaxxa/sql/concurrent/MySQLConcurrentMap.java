@@ -21,7 +21,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 		this.codec = codec;
 	}
 
-	private int executeInsert(final Connection c, final K key, final V value) throws SQLException {
+	private void executeInsert(final Connection c, final K key, final V value) throws SQLException {
 		final Map<String, Object> values = codec.encodeValue(value);
 		values.putAll(codec.encodeKey(key));
 
@@ -33,7 +33,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 				q.setObject(i++, values.get(k));
 			}
 
-			return q.executeUpdate();
+			q.executeUpdate();
 		}
 	}
 
@@ -130,7 +130,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public boolean replace(final K key, final V oldValue, final V newValue) {
-		return dataSource.withConnection(c -> {
+		return dataSource.withConnectionUnchecked(c -> {
 			final int result;
 			c.setAutoCommit(false);
 
@@ -141,7 +141,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 				}
 
 				result = executeUpdate(c, key, newValue);
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				c.rollback();
 				throw e;
 			}
@@ -153,7 +153,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public V replace(final K key, final V value) {
-		return dataSource.withConnection(c -> {
+		return dataSource.withConnectionUnchecked(c -> {
 			final V oldValue;
 			c.setAutoCommit(false);
 
@@ -172,13 +172,13 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public void clear() {
-		dataSource.withStatement("DELETE FROM " + table + ";",
+		dataSource.withStatementUnchecked("DELETE FROM " + table + ";",
 				(CheckedConsumer<PreparedStatement>) PreparedStatement::executeUpdate);
 	}
 
 	@Override
 	public boolean remove(final Object key, final Object value) {
-		return dataSource.withConnection(c -> {
+		return dataSource.withConnectionUnchecked(c -> {
 			final int result;
 			c.setAutoCommit(false);
 
@@ -217,7 +217,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public V remove(final Object key) {
-		return dataSource.withConnection(c -> {
+		return dataSource.withConnectionUnchecked(c -> {
 			final V oldValue;
 			c.setAutoCommit(false);
 
@@ -251,7 +251,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public V put(final K key, final V value) {
-		return dataSource.withConnection(c -> {
+		return dataSource.withConnectionUnchecked(c -> {
 			final V oldValue;
 			c.setAutoCommit(false);
 
@@ -283,7 +283,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public V putIfAbsent(final K key, final V value) {
-		return dataSource.withConnection(c -> {
+		return dataSource.withConnectionUnchecked(c -> {
 			final V oldValue = executeSelect(c, key);
 
 			if (null != oldValue) {
@@ -300,12 +300,12 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public boolean fastPut(final K key, final V value) {
-		return dataSource.withConnection(c -> executeInsertOrUpdate(c, key, value) > 0);
+		return dataSource.withConnectionUnchecked(c -> executeInsertOrUpdate(c, key, value) > 0);
 	}
 
 	@Override
 	public int size() {
-		return dataSource.withStatement("SELECT COUNT(*) FROM " + table + ";", q -> {
+		return dataSource.withStatementUnchecked("SELECT COUNT(*) FROM " + table + ";", q -> {
 			try (final ResultSet rs = q.executeQuery()) {
 				rs.next();
 				return rs.getInt(0);
@@ -315,7 +315,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public void putAll(final Map<? extends K, ? extends V> m) {
-		dataSource.withConnection(c -> {
+		dataSource.withConnectionUnchecked(c -> {
 			for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
 				executeInsertOrUpdate(c, e.getKey(), e.getValue());
 			}
@@ -327,7 +327,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 		final Map<String, Object> keys = codec.encodeKey(key);
 		final Set<String> keySet = keys.keySet();
 
-		return dataSource.withStatement("SELECT EXISTS(SELECT * FROM " + table + " WHERE " +
+		return dataSource.withStatementUnchecked("SELECT EXISTS(SELECT * FROM " + table + " WHERE " +
 				String.join(" AND ", keySet.stream().map(k -> k + " = ?").toArray(String[]::new)) + ";", q -> {
 			int i = 1;
 			for (String k: keySet) {
@@ -346,7 +346,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 		final Map<String, Object> values = codec.encodeValue(value);
 		final Set<String> keySet = values.keySet();
 
-		return dataSource.withStatement("SELECT EXISTS(SELECT * FROM " + table + " WHERE " +
+		return dataSource.withStatementUnchecked("SELECT EXISTS(SELECT * FROM " + table + " WHERE " +
 				String.join(" AND ", keySet.stream().map((k)-> k + " = ?").toArray(String[]::new)) + ");", q -> {
 			int i = 1;
 			for (String k: keySet) {
@@ -362,7 +362,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public boolean isEmpty() {
-		return dataSource.withStatement("SELECT EXISTS(SELECT * FROM " + table + ");", q -> {
+		return dataSource.withStatementUnchecked("SELECT EXISTS(SELECT * FROM " + table + ");", q -> {
 			final ResultSet rs = q.executeQuery();
 
 			rs.next();
@@ -372,7 +372,7 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	@Override
 	public V get(final Object key) {
-		return dataSource.withConnection(c -> {
+		return dataSource.withConnectionUnchecked(c -> {
 			return executeSelect(c, key);
 		});
 	}
