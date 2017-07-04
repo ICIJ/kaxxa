@@ -1,4 +1,4 @@
-package org.icij.kaxxa.sql.concurrent;
+package org.icij.kaxxa.sql;
 
 public interface SQLQueueCodec<E> extends SQLCodec<E> {
 

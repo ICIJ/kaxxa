@@ -1,4 +1,4 @@
-package org.icij.kaxxa.sql.concurrent;
+package org.icij.kaxxa.sql;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,14 +15,14 @@ public interface SQLCodec<T> {
 	Map<String, Object> encodeKey(final Object o);
 
 	/**
-	 * Decode a result set into an instance.
+	 * Decode a result set into an object instance.
 	 *
 	 * @return a new instance of the codec type
 	 */
 	T decodeValue(final ResultSet rs) throws SQLException;
 
 	/**
-	 * Encode an instance into a map of column names and values.
+	 * Encode an object instance into a map of column names and values.
 	 *
 	 * @param o the instance to encode
 	 * @return a column name and value map

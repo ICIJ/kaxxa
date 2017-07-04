@@ -1,24 +1,25 @@
 package org.icij.kaxxa.sql.concurrent;
 
-import org.icij.kaxxa.sql.concurrent.function.CheckedConsumer;
+import org.icij.kaxxa.sql.MySQLSet;
+import org.icij.kaxxa.sql.SQLMapCodec;
+import org.icij.kaxxa.sql.function.CheckedConsumer;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 
 	private final String table;
-	private final SQLCodec<V> codec;
 
-	public MySQLConcurrentMap(final DataSource dataSource, final SQLCodec<V> codec, final String table) {
-		super(dataSource);
+	public MySQLConcurrentMap(final DataSource dataSource, final SQLMapCodec<K, V> codec, final String table) {
+		super(dataSource, codec);
 		this.table = table;
-		this.codec = codec;
 	}
 
 	private void executeInsert(final Connection c, final K key, final V value) throws SQLException {
@@ -41,19 +42,20 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 		final Map<String, Object> values = codec.encodeValue(value);
 		values.putAll(codec.encodeKey(key));
 
-		final Set<String> keySet = values.keySet();
-		final String placeholders = String.join(", ", keySet.stream().map(k -> k + " = ?")
-				.toArray(String[]::new));
+		final Set<String> keys = values.keySet();
 
-		try (final PreparedStatement q = c.prepareStatement("INSERT " + table + " SET " + placeholders +
-				" ON DUPLICATE KEY UPDATE " + placeholders + ";")) {
+		final String sql = "INSERT INTO " + table + " (" +
+				String.join(", ", keys.toArray(new String[keys.size()])) +
+				") VALUES(" +
+				String.join(", ", keys.stream().map(k -> "?").toArray(String[]::new)) +
+				") ON DUPLICATE KEY UPDATE " +
+				String.join(", ", keys.stream().map(k -> k + " = VALUES(" + k + ")").toArray(String[]::new)) + ";";
+
+		try (final PreparedStatement q = c.prepareStatement(sql)) {
 			int i = 1;
-			final int l = keySet.size();
 
-			for (String k : keySet) {
-				q.setObject(i, values.get(k));
-				q.setObject(l + i, values.get(k));
-				i++;
+			for (String k : keys) {
+				q.setObject(i++, values.get(k));
 			}
 
 			return q.executeUpdate();
@@ -375,5 +377,20 @@ public class MySQLConcurrentMap<K, V> extends SQLConcurrentMap<K, V> {
 		return dataSource.withConnectionUnchecked(c -> {
 			return executeSelect(c, key);
 		});
+	}
+
+	@Override
+	public Set<Map.Entry<K, V>> entrySet() {
+		return new MySQLSet<>(dataSource, new EntrySetCodec(), table);
+	}
+
+	@Override
+	public Set<K> keySet() {
+		return new MySQLSet<>(dataSource, new KeySetCodec(), table);
+	}
+
+	@Override
+	public Collection<V> values() {
+		return new MySQLSet<>(dataSource, new ValuesCodec(), table);
 	}
 }

@@ -1,6 +1,6 @@
 package org.icij.kaxxa.sql.concurrent.locks;
 
-import org.icij.kaxxa.sql.concurrent.FunctionalDataSource;
+import org.icij.kaxxa.sql.FunctionalDataSource;
 
 import javax.sql.DataSource;
 import java.util.concurrent.locks.Lock;

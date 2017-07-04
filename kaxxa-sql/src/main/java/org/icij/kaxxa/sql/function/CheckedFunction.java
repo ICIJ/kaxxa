@@ -1,4 +1,4 @@
-package org.icij.kaxxa.sql.concurrent.function;
+package org.icij.kaxxa.sql.function;
 
 import java.sql.SQLException;
 import java.util.function.Function;

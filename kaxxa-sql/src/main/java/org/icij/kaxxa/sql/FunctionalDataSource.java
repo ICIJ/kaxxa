@@ -1,7 +1,7 @@
-package org.icij.kaxxa.sql.concurrent;
+package org.icij.kaxxa.sql;
 
-import org.icij.kaxxa.sql.concurrent.function.CheckedConsumer;
-import org.icij.kaxxa.sql.concurrent.function.CheckedFunction;
+import org.icij.kaxxa.sql.function.CheckedConsumer;
+import org.icij.kaxxa.sql.function.CheckedFunction;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

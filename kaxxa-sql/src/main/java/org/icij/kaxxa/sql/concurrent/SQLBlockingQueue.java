@@ -1,5 +1,8 @@
 package org.icij.kaxxa.sql.concurrent;
 
+import org.icij.kaxxa.sql.SQLCodec;
+import org.icij.kaxxa.sql.SQLCollection;
+
 import javax.sql.DataSource;
 import java.util.Collection;
 import java.util.Date;
@@ -10,14 +13,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-public abstract class SQLBlockingQueue<E> implements BlockingQueue<E> {
+public abstract class SQLBlockingQueue<E> extends SQLCollection<E> implements BlockingQueue<E> {
 
-	protected final FunctionalDataSource dataSource;
 	private final Lock lock;
 	private final Condition notEmpty;
 
-	public SQLBlockingQueue(final DataSource dataSource, final Lock lock) {
-		this.dataSource = FunctionalDataSource.cast(dataSource);
+	SQLBlockingQueue(final DataSource dataSource, final SQLCodec<E> codec, final Lock lock) {
+		super(dataSource, codec);
 		this.lock = lock;
 		this.notEmpty = lock.newCondition();
 	}
@@ -143,11 +145,6 @@ public abstract class SQLBlockingQueue<E> implements BlockingQueue<E> {
 	}
 
 	@Override
-	public Iterator<E> iterator() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public Object[] toArray() {
 		final Object[] a;
 		final Lock lock = this.lock;
@@ -200,49 +197,5 @@ public abstract class SQLBlockingQueue<E> implements BlockingQueue<E> {
 		}
 
 		return a;
-	}
-
-	@Override
-	public boolean containsAll(final Collection<?> c) {
-		for (Object o: c) {
-			if (!this.contains(o)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	@Override
-	public boolean addAll(final Collection<? extends E> c) {
-		c.forEach(this::add);
-		return true;
-	}
-
-	@Override
-	public boolean removeAll(final Collection<?> c) {
-		boolean changed = false;
-
-		for (Object o: c) {
-			if (remove(o) && !changed) {
-				changed = true;
-			}
-		}
-
-		return changed;
-	}
-
-	@Override
-	public boolean retainAll(Collection<?> c) {
-		boolean changed = false;
-
-		for (E e : this) {
-			if (!c.contains(e)) {
-				remove(e);
-				changed = true;
-			}
-		}
-
-		return changed;
 	}
 }

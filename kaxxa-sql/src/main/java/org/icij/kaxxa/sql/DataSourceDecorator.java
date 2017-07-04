@@ -1,4 +1,4 @@
-package org.icij.kaxxa.sql.concurrent;
+package org.icij.kaxxa.sql;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -11,7 +11,7 @@ public class DataSourceDecorator implements DataSource {
 
 	private final DataSource dataSource;
 
-	public DataSourceDecorator(final DataSource dataSource) {
+	DataSourceDecorator(final DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 

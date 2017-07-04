@@ -1,5 +1,7 @@
 package org.icij.kaxxa.sql.concurrent;
 
+import org.icij.kaxxa.sql.MySQLIterator;
+import org.icij.kaxxa.sql.SQLQueueCodec;
 import org.icij.kaxxa.sql.concurrent.locks.MySQLLock;
 
 import javax.sql.DataSource;
@@ -7,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -17,7 +20,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 	private final SQLQueueCodec<E> codec;
 
 	public MySQLBlockingQueue(final DataSource dataSource, final SQLQueueCodec<E> codec, final String table) {
-		super(dataSource, new MySQLLock(dataSource, table));
+		super(dataSource, codec, new MySQLLock(dataSource, table));
 		this.table = table;
 		this.codec = codec;
 	}
@@ -29,7 +32,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 		final Map<String, Object> keys = codec.encodeKey(o);
 		final Set<String> keySet = keys.keySet();
 
-		return dataSource.withStatementUnchecked("DELETE FROM " + table + " WHERE " +
+		return source.withStatementUnchecked("DELETE FROM " + table + " WHERE " +
 				String.join(" AND ", keySet.stream().map(k -> k + " = ?").toArray(String[]::new)) +
 				" AND " + codec.getStatusKey() + "=?;", q -> {
 			int i = 1;
@@ -44,7 +47,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 
 	@Override
 	public void clear() {
-		dataSource.withStatementUnchecked("DELETE FROM " + table + " WHERE " + codec.getStatusKey() + " = ?;", q -> {
+		source.withStatementUnchecked("DELETE FROM " + table + " WHERE " + codec.getStatusKey() + " = ?;", q -> {
 			q.setString(1, codec.getWaitingStatus());
 			return q.executeUpdate();
 		});
@@ -57,7 +60,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 		final Map<String, Object> keys = codec.encodeKey(o);
 		final Set<String> keySet = keys.keySet();
 
-		return dataSource.withStatementUnchecked("SELECT EXISTS(SELECT * FROM " + table + " WHERE " +
+		return source.withStatementUnchecked("SELECT EXISTS(SELECT * FROM " + table + " WHERE " +
 				String.join(" AND ", keySet.stream().map(k -> k + " = ?").toArray(String[]::new)) +
 				" AND " + codec.getStatusKey() + " = ?);", q -> {
 			int i = 1;
@@ -76,7 +79,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 
 	@Override
 	public int size() {
-		return dataSource.withStatementUnchecked("SELECT COUNT(*) FROM " + table + " WHERE " +
+		return source.withStatementUnchecked("SELECT COUNT(*) FROM " + table + " WHERE " +
 				codec.getStatusKey() + " = ?;", q -> {
 			q.setString(1, codec.getWaitingStatus());
 
@@ -91,7 +94,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 	public E poll() {
 		final E o;
 
-		try (final Connection c = dataSource.getConnection()) {
+		try (final Connection c = source.getConnection()) {
 			c.setAutoCommit(false);
 
 			try (final PreparedStatement q = c.prepareStatement("SELECT * FROM " + table + " WHERE " +
@@ -151,7 +154,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 				String.join(", ", keys.stream().map(k -> "?").toArray(String[]::new)) + ") ON DUPLICATE KEY UPDATE "
 		+ codec.getStatusKey() + " = ?;";
 
-		return dataSource.withStatementUnchecked(s, q -> {
+		return source.withStatementUnchecked(s, q -> {
 			int i = 1;
 
 			for (String key: keys) {
@@ -165,7 +168,7 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 
 	@Override
 	public E peek() {
-		return dataSource.withStatementUnchecked("SELECT * FROM " + table + " WHERE " + codec.getStatusKey() +
+		return source.withStatementUnchecked("SELECT * FROM " + table + " WHERE " + codec.getStatusKey() +
 				" = ? LIMIT 1;", q -> {
 			q.setString(1, codec.getWaitingStatus());
 
@@ -173,5 +176,10 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 				return codec.decodeValue(rs);
 			}
 		});
+	}
+
+	@Override
+	public Iterator<E> iterator() {
+		return new MySQLIterator<>(source, codec, table);
 	}
 }
