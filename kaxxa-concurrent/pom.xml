@@ -8,12 +8,12 @@
 	<parent>
 		<groupId>org.icij.kaxxa</groupId>
 		<artifactId>kaxxa</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>kaxxa-concurrent</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>ICIJ Kaxxa Concurrent Utilities</name>

@@ -5,7 +5,7 @@
 
 	<groupId>org.icij.kaxxa</groupId>
 	<artifactId>kaxxa</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>pom</packaging>
 
 	<name>ICIJ Kaxxa</name>
