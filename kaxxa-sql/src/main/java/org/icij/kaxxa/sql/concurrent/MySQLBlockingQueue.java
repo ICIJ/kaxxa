@@ -148,11 +148,14 @@ public class MySQLBlockingQueue<E> extends SQLBlockingQueue<E> {
 
 		final Set<String> keys = values.keySet();
 
+		// Warning: when queueing long values, ensure the key length is long enough.
+		// Otherwise the `ON DUPLICATE KEY UPDATE` will update wrong row.
 		final String s = "INSERT INTO " + table + " (" +
 				String.join(", ", keys.toArray(new String[keys.size()])) +
 				") VALUES(" +
-				String.join(", ", keys.stream().map(k -> "?").toArray(String[]::new)) + ") ON DUPLICATE KEY UPDATE "
-		+ codec.getStatusKey() + " = ?;";
+				String.join(", ", keys.stream().map(k -> "?").toArray(String[]::new)) +
+				") ON DUPLICATE KEY UPDATE "
+				+ codec.getStatusKey() + " = ?;";
 
 		return source.withStatementUnchecked(s, q -> {
 			int i = 1;
