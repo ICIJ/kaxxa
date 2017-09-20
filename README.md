@@ -4,14 +4,14 @@ A suite of libraries for dealing with concurrency, parallelization and data stre
 
 ## Releasing
 
-First, release a snapshot version to staging:
+Release a snapshot version to staging:
 
 ```bash
 mvn clean deploy
 ```
 
-After inspecting the snapshot, release to the Central Repository:
+See [Performing a Snapshot Deployment](http://central.sonatype.org/pages/apache-maven.html#performing-a-snapshot-deployment) for more details.
 
-```bash
-mvn nexus-staging:release
-```
+## License
+
+Copyright (c) 2017 Matthew Caruana Galizia. See `LICENSE`.
